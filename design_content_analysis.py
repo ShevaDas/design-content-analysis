@@ -32,7 +32,7 @@ def mean(data):
     """Return the sample arithmetic mean of data."""
     n = len(data)
     if n < 1:
-        print "No data"
+        print "No data" # but this won't happen because we check when building the list of data that it has at least one value
     return sum(data)/n # in Python 2 use sum(data)/float(n)
 
 def _ss(data):
@@ -50,7 +50,7 @@ def pstdev(data):
     ss = _ss(data)
     pvar = ss/n # the population variance
     num = pvar**0.5
-    return ("%.2f" % num)
+    return ("%.2f" % num) # truncate to 2 decimal places
 
 def table_statistics(table_data): # table_data is a list of the data from some table
     data = {}
@@ -121,7 +121,7 @@ with con:
             pass
 
 commands_list = "Commands: \"search [keyword]\", \"display [table name]\", \"all tables\", \"stats [table name]\", \"help\", \"quit\""
-protip = "Tip: display and stats both accept table names without the field_data_field_ prefix (e.g., job_location instead of field_data_field_job_location)."
+protip = "Tip: display and stats both accept table names without the field_data_field_ or field_data_ prefix (e.g., job_location instead of field_data_field_job_location)."
 
 print commands_list + "\n" + protip
 command = "input"
@@ -134,28 +134,39 @@ while command not in "quit":
         search_term = command.split()[1]
         results = search(field_content, search_term)
         print str(results)
-        analyze = raw_input("Analyze these tables? (y/n) ")
-        if analyze.lower() in "y":
-            for table in results:
-                print table
-                table_statistics(field_content[table])
+        if results is not None:
+            analyze = raw_input("Analyze these tables? (y/n) ")
+            if analyze.lower() in "y":
+                for table in results:
+                    print table
+                    table_statistics(field_content[table])
     elif keyword in "all":
         print field_content.keys()
     elif keyword in "stats":
         table = command.split()[1]
-        if "field_data_field_" not in table: # they provided an abbreviated version
-            table = "field_data_field_" + table
+        prefixed_table = table
+        if "field_data_" not in table: # they provided an abbreviated version
+            prefixed_table = "field_data_field_" + table
         try:
-            table_statistics(field_content[table])
+            table_statistics(field_content[prefixed_table])
         except KeyError:
-            print "No data found for " + table
+            try:
+                prefixed_table = "field_data_" + table
+                table_statistics(field_content[prefixed_table])
+            except:
+                print "No data found for " + table
     elif keyword in "display":
         table = command.split()[1]
-        if "field_data_field_" not in table: # they provided an abbreviated version
-            table = "field_data_field_" + table
+        prefixed_table = table
+        if "field_data_" not in table: # they provided an abbreviated version
+            prefixed_table = "field_data_field_" + table
         try:
-            print field_content[table]
+            print field_content[prefixed_table]
         except KeyError:
-            print "No data found for " + table
+            try:
+                prefixed_table = "field_data_" + table
+                print field_content[prefixed_table]
+            except KeyError:
+                print "No data found for " + table
     elif keyword in "help":
         print commands_list + "\n" + protip
