@@ -46,25 +46,45 @@ def pstdev(data):
     n = len(data)
     if n < 2:
         #raise ValueError('variance requires at least two data points')
-        print "Not enough data"
+        pass # don't do anything for now
     ss = _ss(data)
     pvar = ss/n # the population variance
-    return pvar**0.5
+    num = pvar**0.5
+    return ("%.2f" % num)
 
 def table_statistics(table_data): # table_data is a list of the data from some table
-    #print table_data
+    data = {}
+    character_data = {}
+    word_data = {}
+
     character_lengths = [character_count(item) for item in table_data]
-    character_mean = mean(character_lengths)
-    character_mode = mode(character_lengths)
-    character_dev = pstdev(character_lengths)
+
+    character_data["Longest"] = max(character_lengths)
+    character_data["Shortest"] = min(character_lengths)
+    character_data["Mean"] = mean(character_lengths)
+    character_data["Mode"] = mode(character_lengths)
+    character_data["Std. Dev"] = pstdev(character_lengths)
+
     word_lengths = [word_count(item) for item in table_data]
-    word_mean = mean(word_lengths)
-    word_mode = mode(word_lengths)
-    word_dev = pstdev(word_lengths)
-    print "Mean \t Mode \t Std. Deviation (Characters)"
-    print str(character_mean) + "\t" + str(character_mode) + "\t" + str(character_dev)
-    print "Mean \t Mode \t Std. Deviation (Words)"
-    print str(word_mean) + "\t" + str(word_mode) + "\t" + str(word_dev)
+
+    word_data["Longest"] = max(word_lengths)
+    word_data["Shortest"] = min(word_lengths)
+    word_data["Mean"] = mean(word_lengths)
+    word_data["Mode"] = mode(word_lengths)
+    word_data["Std. Dev"] = pstdev(word_lengths)
+
+    data["Characters"] = character_data
+    data["Words"] = word_data
+
+    headers = ["Longest", "Shortest", "Mean", "Mode", "Std. Dev"]
+
+    # print a formatted table of results
+    row_format ="{:>10}" * (len(headers) + 1)
+    print row_format.format("", *headers)
+
+    for key, value in data.iteritems():
+        sorted_values = [data[key][headers[i]] for i, val in enumerate(data[key].values())]
+        print row_format.format(key, *sorted_values)
 
 def search(dict, term):
     results_list = []
