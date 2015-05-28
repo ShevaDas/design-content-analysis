@@ -95,8 +95,9 @@ def search(dict, term):
         return None
     return results_list
 
-host = 'localhost'
-user = 'root'
+
+host = raw_input("Enter host: ")
+user = raw_input("Enter user: ")
 password = raw_input("Enter password for user %s: " % user)
 database = raw_input("Enter db name (only Drupal databases for now): ")
 
