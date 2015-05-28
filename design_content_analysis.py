@@ -114,18 +114,22 @@ with con:
         try:
             cur.execute(query)
             value_list = [strip_tags(row[0]) for row in cur] # get rid of any HTML tags present
-            field_content[table] = value_list
+            if value_list: # not an empty list!
+                field_content[table] = value_list
         except:
             pass
 
-print "Commands: \"search [keyword]\", \"display [table name]\", \"all tables\", \"stats [table name]\", \"quit\""
+commands_list = "Commands: \"search [keyword]\", \"display [table name]\", \"all tables\", \"stats [table name]\", \"help\", \"quit\""
+protip = "Tip: display and stats both accept table names without the field_data_field_ prefix (e.g., job_location instead of field_data_field_job_location)."
 
+print commands_list + "\n" + protip
 command = "input"
 
 while command not in "quit":
     command = raw_input("> ")
     keyword = command.split()[0]
-    if keyword.lower() in "search":
+    keyword = keyword.lower().strip()
+    if keyword in "search":
         search_term = command.split()[1]
         results = search(field_content, search_term)
         print str(results)
@@ -134,13 +138,23 @@ while command not in "quit":
             for table in results:
                 print table
                 table_statistics(field_content[table])
-    elif keyword.lower() in "all":
+    elif keyword in "all":
         print field_content.keys()
-    elif keyword.lower() in "stats":
+    elif keyword in "stats":
         table = command.split()[1]
-        table_statistics(field_content[table])
-    elif keyword.lower() in "display":
+        if "field_data_field_" not in table: # they provided an abbreviated version
+            table = "field_data_field_" + table
+        try:
+            table_statistics(field_content[table])
+        except KeyError:
+            print "No data found for " + table
+    elif keyword in "display":
         table = command.split()[1]
-        print field_content[table]
-
-#table_statistics(field_content["field_data_field_registration_org"])
+        if "field_data_field_" not in table: # they provided an abbreviated version
+            table = "field_data_field_" + table
+        try:
+            print field_content[table]
+        except KeyError:
+            print "No data found for " + table
+    elif keyword in "help":
+        print commands_list + "\n" + protip
